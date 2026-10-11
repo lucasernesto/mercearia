@@ -56,7 +56,7 @@ Fora do modo de desenvolvimento, o sistema roda no [waitress](https://docs.pylon
 - O estoque baixa quando o pedido é feito. Se dois clientes disputam o último item, só um pedido passa.
 - Cancelar um pedido devolve os itens ao estoque. Um pedido cancelado não muda mais de status.
 - Produtos com estoque zero aparecem como "Esgotado". Produtos ocultos somem da loja, mas continuam nos pedidos antigos.
-- O cliente acompanha o pedido por um link com código aleatório (`/pedido/<código>`). A página se atualiza sozinha a cada minuto.
+- O cliente acompanha o pedido por um link com código aleatório (`/pedido/<código>`). A página confere o status a cada 5 segundos e se atualiza sozinha quando a mercearia muda o status no painel.
 
 ## Estrutura
 

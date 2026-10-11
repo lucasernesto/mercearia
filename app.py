@@ -15,6 +15,7 @@ from flask import (
     abort,
     flash,
     g,
+    jsonify,
     redirect,
     render_template,
     request,
@@ -349,6 +350,19 @@ def acompanhar_pedido(codigo):
     return render_template(
         "pedido.html", pedido=pedido, itens=itens, recem_criado=request.args.get("novo") == "1"
     )
+
+
+@app.get("/pedido/<codigo>/status")
+def status_pedido(codigo):
+    """Consultado periodicamente pela página do cliente para perceber mudanças de status."""
+    pedido = get_db().execute(
+        "SELECT status, atualizado_em FROM pedidos WHERE codigo = ?", (codigo,)
+    ).fetchone()
+    if pedido is None:
+        abort(404)
+    resposta = jsonify(status=pedido["status"], atualizado_em=pedido["atualizado_em"])
+    resposta.headers["Cache-Control"] = "no-store"
+    return resposta
 
 
 # ---------------------------------------------------------------- área administrativa
