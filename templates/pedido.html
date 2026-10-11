@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 {% block titulo %}Pedido #{{ pedido.id }} · Mercearia{% endblock %}
-{% block head %}
-  {% if pedido.status not in ('concluido', 'cancelado') %}
-  <meta http-equiv="refresh" content="60">
-  {% endif %}
-{% endblock %}
-
 {% block conteudo %}
+<div class="alerta alerta-sucesso" id="aviso-status" role="status" hidden>
+  <strong>Status atualizado:</strong> {{ rotulo_status(pedido.status, pedido.tipo_entrega) }}
+</div>
 {% if recem_criado %}
 <div class="alerta alerta-sucesso">
   <strong>Pedido enviado!</strong> Guarde este link para acompanhar o status:
@@ -53,5 +50,9 @@
 
 {% block scripts %}
 {% if recem_criado %}<script>limparCarrinho();</script>{% endif %}
-<script>atualizarBadge();</script>
+<script src="{{ url_for('static', filename='pedido.js') }}"></script>
+<script>
+  atualizarBadge();
+  acompanharStatus({{ url_for('status_pedido', codigo=pedido.codigo)|tojson }}, {{ pedido.status|tojson }});
+</script>
 {% endblock %}
