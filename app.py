@@ -26,6 +26,21 @@ BASE = Path(__file__).resolve().parent
 INSTANCE = BASE / "instance"
 DB_PATH = INSTANCE / "mercearia.db"
 
+
+def carregar_env(arquivo=BASE / ".env"):
+    """Lê um .env simples (CHAVE=valor) sem sobrescrever variáveis já definidas no sistema."""
+    if not arquivo.exists():
+        return
+    for linha in arquivo.read_text(encoding="utf-8-sig").splitlines():
+        linha = linha.strip()
+        if not linha or linha.startswith("#") or "=" not in linha:
+            continue
+        chave, _, valor = linha.partition("=")
+        os.environ.setdefault(chave.strip(), valor.strip().strip("\"'"))
+
+
+carregar_env()
+
 STATUS = {
     "novo": "Novo",
     "separando": "Em separação",
@@ -576,7 +591,18 @@ def requisicao_invalida(e):
 init_db()
 
 if __name__ == "__main__":
+    host = os.environ.get("MERCEARIA_HOST", "127.0.0.1")
+    porta = int(os.environ.get("MERCEARIA_PORTA", "5000"))
     if SENHA_ADMIN == "admin123":
         print("AVISO: usando a senha padrão do painel (admin123). "
-              "Defina MERCEARIA_ADMIN_SENHA antes de colocar no ar.")
-    app.run(host="127.0.0.1", port=5000, debug=os.environ.get("FLASK_DEBUG") == "1")
+              "Defina MERCEARIA_ADMIN_SENHA no arquivo .env antes de colocar no ar.")
+    if os.environ.get("FLASK_DEBUG") == "1":
+        app.run(host=host, port=porta, debug=True)
+    else:
+        from waitress import serve
+
+        endereco = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host
+        print(f"Mercearia rodando em http://{endereco}:{porta}  (painel: /admin, Ctrl+C para parar)")
+        if host == "0.0.0.0":
+            print("Aceitando conexões de outros aparelhos da rede pelo IP desta máquina.")
+        serve(app, host=host, port=porta)

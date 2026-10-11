@@ -9,32 +9,46 @@ Feito em Python com Flask e SQLite. O frontend usa HTML, CSS e JavaScript puro, 
 
 ## Como rodar
 
-```powershell
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
+Única exigência: **Python 3.9 ou mais recente** ([python.org](https://www.python.org/downloads/); no Windows, marque "Add python.exe to PATH" na instalação).
+
+```bash
+git clone git@github.com:lucasernesto/mercearia.git
+cd mercearia
 ```
 
-Abra http://127.0.0.1:5000 para a loja e http://127.0.0.1:5000/admin para o painel.
+Depois, rode o script de inicialização:
 
-Na primeira execução é criado o banco `instance/mercearia.db` com alguns produtos de exemplo. Para começar do zero, apague a pasta `instance/`.
+- **Windows:** dê dois cliques em `iniciar.bat` ou rode `iniciar.bat` no terminal.
+- **Linux/macOS:** `./iniciar.sh` (no Debian/Ubuntu pode ser preciso `sudo apt install python3-venv` antes).
 
-## Configuração (variáveis de ambiente)
+Na primeira vez o script cria o ambiente virtual `.venv`, instala as dependências nas versões fixadas em `requirements.txt` e cria o arquivo `.env` a partir do `.env.example`. Nas próximas vezes ele só inicia o sistema.
+
+Abra http://localhost:5000 para a loja e http://localhost:5000/admin para o painel.
+
+O banco `instance/mercearia.db` é criado na primeira execução, com alguns produtos de exemplo. Ele fica só na máquina e não vai para o git. Para levar os dados de uma máquina para outra, copie a pasta `instance/`. Para começar do zero, apague essa pasta.
+
+### Rodando sem o script
+
+```bash
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt   # Linux/macOS: .venv/bin/python
+.venv\Scripts\python app.py
+```
+
+## Configuração (arquivo `.env`)
+
+Edite o `.env` na pasta do projeto. Variáveis definidas no próprio sistema operacional têm prioridade sobre o arquivo.
 
 | Variável | Padrão | Uso |
 |---|---|---|
 | `MERCEARIA_ADMIN_SENHA` | `admin123` | Senha do painel. **Troque antes de colocar no ar.** |
 | `MERCEARIA_TAXA_ENTREGA_CENTAVOS` | `500` | Taxa de entrega em centavos (500 = R$ 5,00). |
+| `MERCEARIA_HOST` | `127.0.0.1` | `0.0.0.0` libera o acesso de outros aparelhos da rede pelo IP da máquina. |
+| `MERCEARIA_PORTA` | `5000` | Porta do servidor. |
 | `MERCEARIA_SECRET_KEY` | gerada em `instance/secret_key` | Chave das sessões. |
-| `FLASK_DEBUG` | desligado | `1` ativa o modo de desenvolvimento. |
+| `FLASK_DEBUG` | `0` | `1` usa o servidor de desenvolvimento do Flask, que recarrega ao editar o código. |
 
-Exemplo no PowerShell:
-
-```powershell
-$env:MERCEARIA_ADMIN_SENHA = "uma-senha-forte"
-python app.py
-```
+Fora do modo de desenvolvimento, o sistema roda no [waitress](https://docs.pylonsproject.org/projects/waitress/), um servidor próprio para produção que funciona em Windows, Linux e macOS.
 
 ## Regras de negócio
 
@@ -47,6 +61,9 @@ python app.py
 ## Estrutura
 
 ```
+iniciar.bat         prepara e inicia no Windows
+iniciar.sh          prepara e inicia no Linux/macOS
+.env.example        modelo de configuração (copiado para .env)
 app.py              rotas, validação e regras
 schema.sql          tabelas: produtos, pedidos, itens_pedido
 templates/          páginas da loja e do painel (templates/admin/)
@@ -56,4 +73,4 @@ static/carrinho.js  carrinho no navegador, catálogo e checkout
 
 ## Antes de publicar na internet
 
-`python app.py` usa o servidor de desenvolvimento do Flask. Para produção, use um servidor WSGI (por exemplo `waitress-serve --port=8000 app:app` no Windows) atrás de HTTPS e defina uma senha forte. O login do painel não limita tentativas, então vale adicionar isso se o painel ficar exposto.
+Defina uma senha forte no `.env` e coloque o sistema atrás de HTTPS (por exemplo com um proxy reverso como Caddy ou Nginx). O login do painel não limita tentativas, então vale adicionar isso se o painel ficar exposto.
