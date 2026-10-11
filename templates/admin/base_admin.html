@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block link_marca %}{{ url_for('admin_pedidos') }}{% endblock %}
+
+{% block nav %}
+<a href="{{ url_for('admin_pedidos') }}" class="{% if request.endpoint.startswith('admin_pedido') %}ativo{% endif %}">Pedidos</a>
+<a href="{{ url_for('admin_produtos') }}" class="{% if request.endpoint.startswith('admin_produto') %}ativo{% endif %}">Produtos</a>
+<a href="{{ url_for('catalogo') }}" target="_blank" rel="noopener">Ver loja ↗</a>
+<form method="post" action="{{ url_for('admin_sair') }}" class="form-inline">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button class="botao-link" type="submit">Sair</button>
+</form>
+{% endblock %}
+
+{% block scripts %}{% endblock %}

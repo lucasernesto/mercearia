@@ -1,0 +1,39 @@
+{% extends "admin/base_admin.html" %}
+{% block titulo %}{{ 'Novo produto' if novo else 'Editar produto' }} · Painel da mercearia{% endblock %}
+
+{% block conteudo %}
+<a class="link-voltar" href="{{ url_for('admin_produtos') }}">← Produtos</a>
+
+<form class="painel formulario formulario-estreito" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h1>{{ 'Novo produto' if novo else 'Editar produto' }}</h1>
+
+  <label>Nome
+    <input name="nome" required maxlength="100" value="{{ form.nome }}">
+  </label>
+  <label>Categoria
+    <input name="categoria" list="lista-categorias" maxlength="50" value="{{ form.categoria }}"
+           placeholder="Ex.: Hortifrúti">
+    <datalist id="lista-categorias">
+      {% for c in categorias %}<option value="{{ c }}">{% endfor %}
+    </datalist>
+  </label>
+  <div class="linha-campos">
+    <label>Preço (R$)
+      <input name="preco" required inputmode="decimal" placeholder="12,50" value="{{ form.preco }}">
+    </label>
+    <label>Unidade
+      <input name="unidade" maxlength="50" placeholder="kg, pacote 1 kg…" value="{{ form.unidade }}">
+    </label>
+    <label>Estoque
+      <input name="estoque" type="number" min="0" step="1" required value="{{ form.estoque if form.estoque is not none and form.estoque != '' else 0 }}">
+    </label>
+  </div>
+  <label class="opcao">
+    <input type="checkbox" name="ativo" value="1" {% if form.ativo %}checked{% endif %}>
+    Mostrar na loja
+  </label>
+
+  <button class="botao botao-primario botao-grande" type="submit">Salvar</button>
+</form>
+{% endblock %}

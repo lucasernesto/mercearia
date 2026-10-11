@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar · Painel da mercearia{% endblock %}
+{% block nav %}{% endblock %}
+{% block scripts %}{% endblock %}
+
+{% block conteudo %}
+<form class="painel formulario login" method="post">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h1>Painel da mercearia</h1>
+  <label>Senha
+    <input type="password" name="senha" required autofocus autocomplete="current-password">
+  </label>
+  <button class="botao botao-primario botao-grande" type="submit">Entrar</button>
+</form>
+{% endblock %}

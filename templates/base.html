@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}Mercearia{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <header class="topo">
+    <div class="container topo-conteudo">
+      <a class="marca" href="{% block link_marca %}{{ url_for('catalogo') }}{% endblock %}">🧺 Mercearia</a>
+      <nav class="menu">
+        {% block nav %}
+        <a class="botao-carrinho" href="{{ url_for('carrinho') }}">
+          Carrinho <span class="badge" data-badge-carrinho hidden>0</span>
+        </a>
+        {% endblock %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+      {% if mensagens %}
+        <div class="mensagens">
+          {% for categoria, mensagem in mensagens %}
+            <div class="alerta alerta-{{ categoria }}">{{ mensagem }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    {% block conteudo %}{% endblock %}
+  </main>
+
+  <script src="{{ url_for('static', filename='carrinho.js') }}"></script>
+  {% block scripts %}<script>atualizarBadge();</script>{% endblock %}
+</body>
+</html>

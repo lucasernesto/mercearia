@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titulo %}Carrinho · Mercearia{% endblock %}
+
+{% block conteudo %}
+<h1>Seu pedido</h1>
+
+<div class="checkout">
+  <section class="painel">
+    <h2>Itens</h2>
+    <div id="itens-carrinho" class="lista-itens"></div>
+    <p id="carrinho-vazio" class="vazio" hidden>
+      Seu carrinho está vazio. <a href="{{ url_for('catalogo') }}">Ver produtos</a>
+    </p>
+    <dl class="resumo">
+      <div><dt>Subtotal</dt><dd id="subtotal">—</dd></div>
+      <div><dt>Entrega</dt><dd id="taxa">—</dd></div>
+      <div class="total"><dt>Total</dt><dd id="total">—</dd></div>
+    </dl>
+    <a class="link-voltar" href="{{ url_for('catalogo') }}">← Continuar comprando</a>
+  </section>
+
+  <form class="painel formulario" method="post" action="{{ url_for('finalizar') }}" id="form-checkout">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="carrinho" id="campo-carrinho">
+    <h2>Seus dados</h2>
+
+    <label>Nome
+      <input name="nome" required maxlength="100" autocomplete="name" value="{{ form.nome }}">
+    </label>
+    <label>Telefone / WhatsApp
+      <input name="telefone" type="tel" required maxlength="20" autocomplete="tel"
+             placeholder="(11) 91234-5678" value="{{ form.telefone }}">
+    </label>
+
+    <fieldset>
+      <legend>Como quer receber?</legend>
+      <label class="opcao">
+        <input type="radio" name="tipo_entrega" value="entrega" {% if form.tipo_entrega != 'retirada' %}checked{% endif %}>
+        Entrega <small>(+ {{ taxa_entrega|brl }})</small>
+      </label>
+      <label class="opcao">
+        <input type="radio" name="tipo_entrega" value="retirada" {% if form.tipo_entrega == 'retirada' %}checked{% endif %}>
+        Retirar na loja <small>(sem taxa)</small>
+      </label>
+    </fieldset>
+
+    <label id="campo-endereco">Endereço de entrega
+      <textarea name="endereco" rows="2" maxlength="300" autocomplete="street-address"
+                placeholder="Rua, número, complemento, bairro">{{ form.endereco }}</textarea>
+    </label>
+
+    <label>Pagamento
+      <select name="pagamento">
+        {% for chave, rotulo in PAGAMENTOS.items() %}
+        <option value="{{ chave }}" {% if form.pagamento == chave %}selected{% endif %}>{{ rotulo }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Observações <small>(opcional)</small>
+      <textarea name="observacao" rows="2" maxlength="500"
+                placeholder="Ex.: troco para R$ 50, banana mais verde">{{ form.observacao }}</textarea>
+    </label>
+
+    <button class="botao botao-primario botao-grande" type="submit" id="botao-finalizar">Enviar pedido</button>
+  </form>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>iniciarCheckout({{ produtos|tojson }}, {{ taxa_entrega }});</script>
+{% endblock %}

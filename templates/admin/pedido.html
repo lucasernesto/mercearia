@@ -1,0 +1,56 @@
+{% extends "admin/base_admin.html" %}
+{% block titulo %}Pedido #{{ pedido.id }} · Painel da mercearia{% endblock %}
+
+{% block conteudo %}
+<a class="link-voltar" href="{{ url_for('admin_pedidos') }}">← Pedidos</a>
+
+<div class="cabecalho-pedido">
+  <h1>Pedido #{{ pedido.id }}</h1>
+  <span class="pill pill-{{ pedido.status }}">{{ rotulo_status(pedido.status, pedido.tipo_entrega) }}</span>
+</div>
+<p class="suave">Feito em {{ pedido.criado_em|data_br }} · atualizado em {{ pedido.atualizado_em|data_br }}</p>
+
+{% if pedido.status != 'cancelado' %}
+<section class="painel acoes-status">
+  <h2>Mudar status</h2>
+  <div class="botoes-status">
+    {% for chave in ETAPAS + ['cancelado'] %}
+    <form method="post" action="{{ url_for('admin_alterar_status', pedido_id=pedido.id) }}"
+          {% if chave == 'cancelado' %}onsubmit="return confirm('Cancelar o pedido e devolver os itens ao estoque?')"{% endif %}>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="status" value="{{ chave }}">
+      <button type="submit"
+              class="botao {% if chave == pedido.status %}botao-atual{% elif chave == 'cancelado' %}botao-perigo{% else %}botao-secundario{% endif %}"
+              {% if chave == pedido.status %}disabled aria-current="true"{% endif %}>
+        {{ rotulo_status(chave, pedido.tipo_entrega) }}
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+<div class="duas-colunas">
+  <section class="painel">
+    <h2>Itens</h2>
+    {% include "_itens_pedido.html" %}
+  </section>
+  <section class="painel">
+    <h2>Cliente</h2>
+    <dl class="dados">
+      <dt>Nome</dt><dd>{{ pedido.cliente_nome }}</dd>
+      <dt>Telefone</dt>
+      <dd>
+        {{ pedido.cliente_telefone }}
+        <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">WhatsApp ↗</a>
+      </dd>
+      <dt>Recebimento</dt>
+      <dd>{% if pedido.tipo_entrega == 'entrega' %}Entrega em {{ pedido.endereco }}{% else %}Retirada na loja{% endif %}</dd>
+      <dt>Pagamento</dt><dd>{{ PAGAMENTOS.get(pedido.pagamento, pedido.pagamento) }}</dd>
+      {% if pedido.observacao %}<dt>Observações</dt><dd>{{ pedido.observacao }}</dd>{% endif %}
+      <dt>Link do cliente</dt>
+      <dd><a href="{{ url_for('acompanhar_pedido', codigo=pedido.codigo) }}" target="_blank" rel="noopener">Abrir acompanhamento ↗</a></dd>
+    </dl>
+  </section>
+</div>
+{% endblock %}

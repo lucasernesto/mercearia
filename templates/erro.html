@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% block titulo %}{{ titulo }} · Mercearia{% endblock %}
+
+{% block conteudo %}
+<section class="painel erro">
+  <h1>{{ titulo }}</h1>
+  <p>{{ mensagem }}</p>
+  <a class="botao botao-primario" href="{{ url_for('catalogo') }}">Voltar para a loja</a>
+</section>
+{% endblock %}

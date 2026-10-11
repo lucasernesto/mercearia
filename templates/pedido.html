@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Pedido #{{ pedido.id }} · Mercearia{% endblock %}
+{% block head %}
+  {% if pedido.status not in ('concluido', 'cancelado') %}
+  <meta http-equiv="refresh" content="60">
+  {% endif %}
+{% endblock %}
+
+{% block conteudo %}
+{% if recem_criado %}
+<div class="alerta alerta-sucesso">
+  <strong>Pedido enviado!</strong> Guarde este link para acompanhar o status:
+  <code class="link-pedido">{{ url_for('acompanhar_pedido', codigo=pedido.codigo, _external=True) }}</code>
+</div>
+{% endif %}
+
+<div class="cabecalho-pedido">
+  <h1>Pedido #{{ pedido.id }}</h1>
+  <span class="pill pill-{{ pedido.status }}">{{ rotulo_status(pedido.status, pedido.tipo_entrega) }}</span>
+</div>
+<p class="suave">Feito em {{ pedido.criado_em|data_br }} · atualizado em {{ pedido.atualizado_em|data_br }}</p>
+
+{% if pedido.status == 'cancelado' %}
+<div class="alerta alerta-erro">Este pedido foi cancelado. Em caso de dúvida, fale com a mercearia.</div>
+{% else %}
+{% set atual = ETAPAS.index(pedido.status) %}
+<ol class="linha-tempo">
+  {% for etapa in ETAPAS %}
+  <li class="{% if loop.index0 < atual %}feito{% elif loop.index0 == atual %}atual{% endif %}">
+    {{ rotulo_status(etapa, pedido.tipo_entrega) }}
+  </li>
+  {% endfor %}
+</ol>
+{% endif %}
+
+<div class="duas-colunas">
+  <section class="painel">
+    <h2>Itens</h2>
+    {% include "_itens_pedido.html" %}
+  </section>
+  <section class="painel">
+    <h2>Entrega e pagamento</h2>
+    <dl class="dados">
+      <dt>Cliente</dt><dd>{{ pedido.cliente_nome }}</dd>
+      <dt>Recebimento</dt>
+      <dd>{% if pedido.tipo_entrega == 'entrega' %}Entrega em {{ pedido.endereco }}{% else %}Retirada na loja{% endif %}</dd>
+      <dt>Pagamento</dt><dd>{{ PAGAMENTOS.get(pedido.pagamento, pedido.pagamento) }}</dd>
+      {% if pedido.observacao %}<dt>Observações</dt><dd>{{ pedido.observacao }}</dd>{% endif %}
+    </dl>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if recem_criado %}<script>limparCarrinho();</script>{% endif %}
+<script>atualizarBadge();</script>
+{% endblock %}

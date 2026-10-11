@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block conteudo %}
+<section class="intro">
+  <h1>Faça seu pedido</h1>
+  <p>Escolha os produtos, informe entrega ou retirada e acompanhe o status pelo link do pedido.</p>
+  <input id="busca" class="busca" type="search" placeholder="Buscar produto…" aria-label="Buscar produto">
+</section>
+
+{% for categoria, produtos in categorias %}
+<section class="categoria" data-categoria>
+  <h2>{{ categoria }}</h2>
+  <div class="grade">
+    {% for p in produtos %}
+    <article class="card-produto{% if p.estoque <= 0 %} esgotado{% endif %}"
+             data-produto data-id="{{ p.id }}" data-estoque="{{ p.estoque }}">
+      <h3>{{ p.nome }}</h3>
+      <p class="unidade">{{ p.unidade }}</p>
+      <p class="preco">{{ p.preco_centavos|brl }}</p>
+      <div class="controles" data-controles>
+        {% if p.estoque <= 0 %}<span class="selo-esgotado">Esgotado</span>{% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% else %}
+<p class="vazio">Nenhum produto disponível no momento.</p>
+{% endfor %}
+<p class="vazio" id="busca-vazia" hidden>Nenhum produto encontrado.</p>
+{% endblock %}
+
+{% block scripts %}<script>iniciarCatalogo();</script>{% endblock %}

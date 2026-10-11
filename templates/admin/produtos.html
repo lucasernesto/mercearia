@@ -1,0 +1,37 @@
+{% extends "admin/base_admin.html" %}
+{% block titulo %}Produtos · Painel da mercearia{% endblock %}
+
+{% block conteudo %}
+<div class="cabecalho-pagina">
+  <h1>Produtos</h1>
+  <a class="botao botao-primario" href="{{ url_for('admin_produto_novo') }}">+ Novo produto</a>
+</div>
+
+<div class="tabela-rolavel">
+<table class="tabela">
+  <thead>
+    <tr><th>Produto</th><th>Categoria</th><th class="num">Preço</th><th class="num">Estoque</th><th>Na loja</th><th></th></tr>
+  </thead>
+  <tbody>
+    {% for p in produtos %}
+    <tr class="{% if not p.ativo %}inativo{% endif %}">
+      <td>{{ p.nome }} <small class="suave">{{ p.unidade }}</small></td>
+      <td>{{ p.categoria }}</td>
+      <td class="num">{{ p.preco_centavos|brl }}</td>
+      <td class="num {% if p.estoque == 0 %}texto-alerta{% endif %}">{{ p.estoque }}</td>
+      <td>
+        <form method="post" action="{{ url_for('admin_produto_alternar', produto_id=p.id) }}" class="form-inline">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="pill {{ 'pill-concluido' if p.ativo else 'pill-cancelado' }}"
+                  title="Clique para {{ 'ocultar da' if p.ativo else 'mostrar na' }} loja">
+            {{ 'Visível' if p.ativo else 'Oculto' }}
+          </button>
+        </form>
+      </td>
+      <td><a href="{{ url_for('admin_produto_editar', produto_id=p.id) }}">Editar</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+</div>
+{% endblock %}

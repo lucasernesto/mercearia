@@ -1,0 +1,20 @@
+<table class="tabela">
+  <thead>
+    <tr><th>Produto</th><th class="num">Qtd.</th><th class="num">Preço</th><th class="num">Total</th></tr>
+  </thead>
+  <tbody>
+    {% for item in itens %}
+    <tr>
+      <td>{{ item.nome_produto }} <small class="suave">{{ item.unidade }}</small></td>
+      <td class="num">{{ item.quantidade }}</td>
+      <td class="num">{{ item.preco_unitario_centavos|brl }}</td>
+      <td class="num">{{ (item.preco_unitario_centavos * item.quantidade)|brl }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr><td colspan="3">Subtotal</td><td class="num">{{ pedido.subtotal_centavos|brl }}</td></tr>
+    <tr><td colspan="3">Entrega</td><td class="num">{{ pedido.taxa_entrega_centavos|brl }}</td></tr>
+    <tr class="total"><td colspan="3">Total</td><td class="num">{{ pedido.total_centavos|brl }}</td></tr>
+  </tfoot>
+</table>
