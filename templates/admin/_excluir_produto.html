@@ -1,0 +1,9 @@
+{# Espera a variável `p` (produto). A confirmação é feita por static/painel.js. #}
+<form method="post" action="{{ url_for('admin_produto_excluir', produto_id=p.id) }}" class="form-inline"
+      data-confirmar="Excluir “{{ p.nome }}” definitivamente?
+
+Ele sai da loja e da lista de produtos. Os pedidos já feitos não mudam.
+Para só tirar da loja por um tempo, use “Oculto”.">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <button type="submit" class="botao-excluir">{{ texto_botao or "Excluir" }}</button>
+</form>

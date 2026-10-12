@@ -16,7 +16,7 @@
   <div class="botoes-status">
     {% for chave in ETAPAS + ['cancelado'] %}
     <form method="post" action="{{ url_for('admin_alterar_status', pedido_id=pedido.id) }}"
-          {% if chave == 'cancelado' %}onsubmit="return confirm('Cancelar o pedido e devolver os itens ao estoque?')"{% endif %}>
+          {% if chave == 'cancelado' %}data-confirmar="Cancelar o pedido e devolver os itens ao estoque?"{% endif %}>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="status" value="{{ chave }}">
       <button type="submit"
@@ -41,7 +41,7 @@
       <dt>Nome</dt><dd>{{ pedido.cliente_nome }}</dd>
       <dt>Telefone</dt>
       <dd>
-        {{ pedido.cliente_telefone }}
+        <a href="tel:+{{ whatsapp }}">{{ pedido.cliente_telefone }}</a>
         <a href="https://wa.me/{{ whatsapp }}" target="_blank" rel="noopener">WhatsApp ↗</a>
       </dd>
       <dt>Recebimento</dt>

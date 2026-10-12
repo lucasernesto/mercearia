@@ -194,8 +194,14 @@ function iniciarCheckout(produtos, taxaEntrega) {
     endereco.required = entrega;
   }
 
+  const pagamento = form.querySelector("select[name=pagamento]");
+  const dicaPix = document.getElementById("dica-pix");
+  const mostrarDicaPix = () => dicaPix && (dicaPix.hidden = pagamento.value !== "pix");
+  mostrarDicaPix();
+
   form.addEventListener("change", (e) => {
     if (e.target.name === "tipo_entrega") renderizar();
+    if (e.target === pagamento) mostrarDicaPix();
   });
   form.addEventListener("submit", (e) => {
     const atual = lerCarrinho();

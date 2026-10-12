@@ -1,6 +1,8 @@
 {% extends "base.html" %}
 {% block titulo %}Entrar · Painel da mercearia{% endblock %}
+{% block head %}{% include "admin/_head_painel.html" %}{% endblock %}
 {% block nav %}{% endblock %}
+{% block rodape %}<a href="{{ url_for('catalogo') }}">← Voltar para a loja</a>{% endblock %}
 {% block scripts %}{% endblock %}
 
 {% block conteudo %}
@@ -9,6 +11,10 @@
   <h1>Painel da mercearia</h1>
   <label>Senha
     <input type="password" name="senha" required autofocus autocomplete="current-password">
+  </label>
+  <label class="opcao">
+    <input type="checkbox" name="lembrar" value="1" checked>
+    Manter conectado neste aparelho por 30 dias
   </label>
   <button class="botao botao-primario botao-grande" type="submit">Entrar</button>
 </form>
