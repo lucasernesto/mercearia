@@ -1,14 +1,17 @@
 """Sistema de pedidos da mercearia: catálogo para clientes e painel administrativo."""
 
 import json
+import mimetypes
 import os
 import re
 import secrets
 import sqlite3
+from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 from functools import wraps
 from itertools import groupby
 from pathlib import Path
+from urllib.parse import quote
 
 from flask import (
     Flask,
@@ -42,6 +45,12 @@ def carregar_env(arquivo=BASE / ".env"):
 
 carregar_env()
 
+
+def numero_whatsapp(telefone):
+    """Deixa só os dígitos e põe o 55 do Brasil quando o número vem só com DDD."""
+    digitos = re.sub(r"\D", "", telefone or "")
+    return "55" + digitos if len(digitos) in (10, 11) else digitos
+
 STATUS = {
     "novo": "Novo",
     "separando": "Em separação",
@@ -57,6 +66,9 @@ PAGAMENTOS = {
 }
 TAXA_ENTREGA = int(os.environ.get("MERCEARIA_TAXA_ENTREGA_CENTAVOS", "500"))
 SENHA_ADMIN = os.environ.get("MERCEARIA_ADMIN_SENHA", "admin123")
+# Para pagamentos via Pix: chave mostrada ao cliente e WhatsApp que recebe os comprovantes.
+PIX_CHAVE = os.environ.get("MERCEARIA_PIX_CHAVE", "").strip()
+WHATSAPP_LOJA = numero_whatsapp(os.environ.get("MERCEARIA_WHATSAPP"))
 QTD_MAXIMA_POR_ITEM = 99
 
 PRODUTOS_INICIAIS = [
@@ -90,7 +102,14 @@ def carregar_secret_key():
 
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = os.environ.get("MERCEARIA_SECRET_KEY") or carregar_secret_key()
+app.config.update(
+    SECRET_KEY=os.environ.get("MERCEARIA_SECRET_KEY") or carregar_secret_key(),
+    # "Manter conectado" no login: no celular o admin não precisa digitar a senha toda vez.
+    PERMANENT_SESSION_LIFETIME=timedelta(days=30),
+    SESSION_COOKIE_SAMESITE="Lax",
+)
+# O Windows nem sempre conhece essa extensão, e o navegador espera esse tipo no manifesto.
+mimetypes.add_type("application/manifest+json", ".webmanifest")
 
 
 # ---------------------------------------------------------------- banco de dados
@@ -160,6 +179,7 @@ app.jinja_env.globals.update(
     STATUS=STATUS,
     ETAPAS=ETAPAS,
     PAGAMENTOS=PAGAMENTOS,
+    PIX_CONFIGURADO=bool(PIX_CHAVE or WHATSAPP_LOJA),
 )
 
 
@@ -347,8 +367,17 @@ def carregar_pedido(where, valor):
 @app.get("/pedido/<codigo>")
 def acompanhar_pedido(codigo):
     pedido, itens = carregar_pedido("codigo", codigo)
+    link_comprovante = None
+    if pedido["pagamento"] == "pix" and WHATSAPP_LOJA:
+        mensagem = (
+            f"Olá! Segue o comprovante do Pix do pedido #{pedido['id']} "
+            f"({formatar_brl(pedido['total_centavos'])}), em nome de {pedido['cliente_nome']}.\n"
+            f"Acompanhamento: {url_for('acompanhar_pedido', codigo=codigo, _external=True)}"
+        )
+        link_comprovante = f"https://wa.me/{WHATSAPP_LOJA}?text={quote(mensagem)}"
     return render_template(
-        "pedido.html", pedido=pedido, itens=itens, recem_criado=request.args.get("novo") == "1"
+        "pedido.html", pedido=pedido, itens=itens, recem_criado=request.args.get("novo") == "1",
+        pix_chave=PIX_CHAVE, link_comprovante=link_comprovante,
     )
 
 
@@ -372,6 +401,7 @@ def admin_login():
     if request.method == "POST":
         if secrets.compare_digest(request.form.get("senha", ""), SENHA_ADMIN):
             session["admin"] = True
+            session.permanent = request.form.get("lembrar") == "1"
             destino = request.args.get("next", "")
             if not destino.startswith("/admin/"):
                 destino = url_for("admin_pedidos")
@@ -419,10 +449,10 @@ def admin_pedidos():
 @admin_obrigatorio
 def admin_pedido(pedido_id):
     pedido, itens = carregar_pedido("id", pedido_id)
-    whatsapp = re.sub(r"\D", "", pedido["cliente_telefone"])
-    if len(whatsapp) in (10, 11):
-        whatsapp = "55" + whatsapp
-    return render_template("admin/pedido.html", pedido=pedido, itens=itens, whatsapp=whatsapp)
+    return render_template(
+        "admin/pedido.html", pedido=pedido, itens=itens,
+        whatsapp=numero_whatsapp(pedido["cliente_telefone"]),
+    )
 
 
 @app.post("/admin/pedidos/<int:pedido_id>/status")
@@ -587,6 +617,20 @@ def admin_produto_alternar(produto_id):
     db = get_db()
     db.execute("UPDATE produtos SET ativo = 1 - ativo WHERE id = ?", (produto_id,))
     db.commit()
+    return redirect(url_for("admin_produtos"))
+
+
+@app.post("/admin/produtos/<int:produto_id>/excluir")
+@admin_obrigatorio
+def admin_produto_excluir(produto_id):
+    db = get_db()
+    produto = db.execute("SELECT nome FROM produtos WHERE id = ?", (produto_id,)).fetchone()
+    if produto is None:
+        abort(404)
+    # Os itens de pedidos antigos guardam nome e preço; o vínculo vira NULL (ON DELETE SET NULL).
+    db.execute("DELETE FROM produtos WHERE id = ?", (produto_id,))
+    db.commit()
+    flash(f"Produto “{produto['nome']}” excluído. Os pedidos já feitos continuam com ele.", "sucesso")
     return redirect(url_for("admin_produtos"))
 
 

@@ -42,9 +42,15 @@ main.container { padding-top: 24px; padding-bottom: 48px; }
 
 /* ---------- topo */
 .topo { background: var(--verde); color: #fff; position: sticky; top: 0; z-index: 10; }
-.topo-conteudo { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 60px; }
-.marca { color: #fff; font-weight: 700; font-size: 1.2rem; text-decoration: none; white-space: nowrap; }
-.menu { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.topo-conteudo {
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap;
+  column-gap: 16px; min-height: 60px;
+}
+.marca { color: #fff; font-weight: 700; font-size: 1.2rem; text-decoration: none; white-space: nowrap; padding: 14px 0; }
+/* Se o menu não couber ao lado da marca, desce para uma linha própria e rola de lado. */
+.menu { display: flex; align-items: center; gap: 4px; margin-left: auto; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.menu::-webkit-scrollbar { display: none; }
+.menu > * { flex-shrink: 0; }
 .menu a, .botao-link {
   color: #fff; text-decoration: none; padding: 8px 12px; border-radius: 8px;
   font: inherit; background: none; border: 0; cursor: pointer;
@@ -162,6 +168,10 @@ legend { font-weight: 600; padding: 0 4px; }
 .login { max-width: 380px; margin: 40px auto; }
 
 .vazio { color: var(--suave); text-align: center; padding: 24px 0; }
+
+.rodape { border-top: 1px solid var(--borda); padding: 20px 0 28px; text-align: center; font-size: .9rem; }
+.rodape a { color: var(--suave); padding: 8px; }
+.rodape:not(:has(a)) { display: none; }
 .erro { max-width: 520px; margin: 40px auto; text-align: center; }
 
 /* ---------- pedido */
@@ -201,6 +211,19 @@ button.pill { cursor: pointer; }
 .linha-tempo li.atual { font-weight: 700; }
 .linha-tempo li.atual::before { background: var(--verde); box-shadow: 0 0 0 5px var(--verde-claro); }
 
+.pagamento-pix { margin-bottom: 20px; display: grid; gap: 12px; border-color: #b9dcc6; }
+.pagamento-pix h2, .pagamento-pix p { margin: 0; }
+.valor-pix strong { font-size: 1.25rem; }
+.chave-pix { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.chave-pix .suave { flex-basis: 100%; font-size: .9rem; }
+.chave-pix code {
+  flex: 1 1 200px; padding: 10px 12px; border-radius: 8px; background: var(--fundo);
+  border: 1px dashed var(--borda); font-size: 1rem; overflow-wrap: anywhere; user-select: all;
+}
+.botao-whatsapp { background: #25d366; color: #073b1d; }
+.botao-whatsapp:hover { background: #1ebe5b; }
+.pagamento-pix .dica { font-size: .9rem; }
+
 .dados { display: grid; grid-template-columns: max-content 1fr; gap: 8px 16px; margin: 0; }
 .dados dt { color: var(--suave); }
 .dados dd { margin: 0; overflow-wrap: anywhere; }
@@ -234,3 +257,63 @@ tr.inativo td { color: var(--suave); }
 .acoes-status { margin: 16px 0 20px; }
 .botoes-status { display: flex; flex-wrap: wrap; gap: 8px; }
 .botoes-status form { margin: 0; }
+.rotulo-celular { display: none; }
+
+.c-editar { white-space: nowrap; }
+.c-editar > a { margin-right: 14px; }
+.botao-excluir {
+  font: inherit; color: var(--perigo); background: none; border: 0; padding: 0;
+  cursor: pointer; text-decoration: underline;
+}
+.botao-excluir:hover { color: #8c1c16; }
+.zona-excluir { text-align: center; margin-top: 16px; }
+.zona-excluir .botao-excluir { padding: 10px; }
+
+/* ---------- painel no celular: abas numa linha só e tabelas viram cartões */
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  .painel { padding: 16px; }
+
+  .abas { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px 16px; padding: 0 16px; }
+  .abas::-webkit-scrollbar { display: none; }
+  .abas a { flex-shrink: 0; white-space: nowrap; padding: 9px 14px; }
+
+  .botoes-status .botao { padding: 11px 14px; }
+
+  .tabela-cartoes thead { display: none; }
+  .tabela-cartoes, .tabela-cartoes tbody { display: block; }
+  .tabela-cartoes tr {
+    display: grid; gap: 4px 12px; align-items: center; position: relative;
+    padding: 14px 16px; border-bottom: 1px solid var(--borda);
+  }
+  .tabela-cartoes tbody tr:last-child { border-bottom: 0; }
+  .tabela-cartoes td { display: block; padding: 0; border: 0; text-align: left !important; }
+  .rotulo-celular { display: inline; color: var(--suave); font-weight: 400; }
+
+  .cartoes-pedidos tr {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas: "id cliente total" "status status receb" "data data data";
+  }
+  .cartoes-pedidos .c-id { grid-area: id; }
+  .cartoes-pedidos .c-cliente { grid-area: cliente; font-size: 1.05rem; min-width: 0; overflow-wrap: anywhere; }
+  .cartoes-pedidos .c-total { grid-area: total; font-weight: 700; text-align: right !important; }
+  .cartoes-pedidos .c-status { grid-area: status; }
+  .cartoes-pedidos .c-receb { grid-area: receb; color: var(--suave); text-align: right !important; }
+  .cartoes-pedidos .c-data { grid-area: data; color: var(--suave); font-size: .85rem; }
+  /* O cartão inteiro abre o pedido, não só o nome. */
+  .cartoes-pedidos .link-linha::after { content: ""; position: absolute; inset: 0; }
+
+  .cartoes-produtos tr {
+    grid-template-columns: 1fr auto;
+    grid-template-areas: "nome preco" "categoria estoque";
+  }
+  .cartoes-produtos .c-nome { grid-area: nome; font-weight: 600; }
+  .cartoes-produtos .c-preco { grid-area: preco; font-weight: 700; text-align: right !important; }
+  .cartoes-produtos .c-categoria { grid-area: categoria; color: var(--suave); }
+  .cartoes-produtos .c-estoque { grid-area: estoque; text-align: right !important; }
+  /* A linha de ações ocupa o cartão inteiro, para não estreitar a coluna do nome. */
+  .cartoes-produtos .c-ativo { grid-row: 3; grid-column: 1; justify-self: start; padding-top: 6px; }
+  .cartoes-produtos .c-editar { grid-row: 3; grid-column: 1 / -1; justify-self: end; padding-top: 6px; }
+  .cartoes-produtos .c-editar > a, .cartoes-produtos .botao-excluir { display: inline-block; padding: 6px 0 6px 16px; font-weight: 600; }
+  .cartoes-produtos .c-editar > a { margin-right: 4px; }
+}

@@ -8,18 +8,18 @@
 </div>
 
 <div class="tabela-rolavel">
-<table class="tabela">
+<table class="tabela tabela-cartoes cartoes-produtos">
   <thead>
     <tr><th>Produto</th><th>Categoria</th><th class="num">Preço</th><th class="num">Estoque</th><th>Na loja</th><th></th></tr>
   </thead>
   <tbody>
     {% for p in produtos %}
     <tr class="{% if not p.ativo %}inativo{% endif %}">
-      <td>{{ p.nome }} <small class="suave">{{ p.unidade }}</small></td>
-      <td>{{ p.categoria }}</td>
-      <td class="num">{{ p.preco_centavos|brl }}</td>
-      <td class="num {% if p.estoque == 0 %}texto-alerta{% endif %}">{{ p.estoque }}</td>
-      <td>
+      <td class="c-nome">{{ p.nome }} <small class="suave">{{ p.unidade }}</small></td>
+      <td class="c-categoria">{{ p.categoria }}</td>
+      <td class="c-preco num">{{ p.preco_centavos|brl }}</td>
+      <td class="c-estoque num {% if p.estoque == 0 %}texto-alerta{% endif %}"><span class="rotulo-celular">Estoque: </span>{{ p.estoque }}</td>
+      <td class="c-ativo">
         <form method="post" action="{{ url_for('admin_produto_alternar', produto_id=p.id) }}" class="form-inline">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="pill {{ 'pill-concluido' if p.ativo else 'pill-cancelado' }}"
@@ -28,7 +28,10 @@
           </button>
         </form>
       </td>
-      <td><a href="{{ url_for('admin_produto_editar', produto_id=p.id) }}">Editar</a></td>
+      <td class="c-editar">
+        <a href="{{ url_for('admin_produto_editar', produto_id=p.id) }}">Editar</a>
+        {% include "admin/_excluir_produto.html" %}
+      </td>
     </tr>
     {% endfor %}
   </tbody>

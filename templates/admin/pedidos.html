@@ -1,6 +1,6 @@
 {% extends "admin/base_admin.html" %}
 {% block titulo %}Pedidos · Painel da mercearia{% endblock %}
-{% block head %}<meta http-equiv="refresh" content="30">{% endblock %}
+{% block head_pagina %}<meta http-equiv="refresh" content="30">{% endblock %}
 
 {% block conteudo %}
 <div class="cabecalho-pagina">
@@ -22,19 +22,19 @@
 
 {% if pedidos %}
 <div class="tabela-rolavel">
-<table class="tabela tabela-clicavel">
+<table class="tabela tabela-clicavel tabela-cartoes cartoes-pedidos">
   <thead>
     <tr><th>#</th><th>Cliente</th><th>Recebimento</th><th class="num">Total</th><th>Status</th><th>Feito em</th></tr>
   </thead>
   <tbody>
     {% for p in pedidos %}
     <tr>
-      <td><a href="{{ url_for('admin_pedido', pedido_id=p.id) }}">#{{ p.id }}</a></td>
-      <td><a href="{{ url_for('admin_pedido', pedido_id=p.id) }}">{{ p.cliente_nome }}</a></td>
-      <td>{{ 'Entrega' if p.tipo_entrega == 'entrega' else 'Retirada' }}</td>
-      <td class="num">{{ p.total_centavos|brl }}</td>
-      <td><span class="pill pill-{{ p.status }}">{{ rotulo_status(p.status, p.tipo_entrega) }}</span></td>
-      <td>{{ p.criado_em|data_br }}</td>
+      <td class="c-id"><a href="{{ url_for('admin_pedido', pedido_id=p.id) }}">#{{ p.id }}</a></td>
+      <td class="c-cliente"><a class="link-linha" href="{{ url_for('admin_pedido', pedido_id=p.id) }}">{{ p.cliente_nome }}</a></td>
+      <td class="c-receb">{{ 'Entrega' if p.tipo_entrega == 'entrega' else 'Retirada' }}</td>
+      <td class="c-total num">{{ p.total_centavos|brl }}</td>
+      <td class="c-status"><span class="pill pill-{{ p.status }}">{{ rotulo_status(p.status, p.tipo_entrega) }}</span></td>
+      <td class="c-data">{{ p.criado_em|data_br }}</td>
     </tr>
     {% endfor %}
   </tbody>

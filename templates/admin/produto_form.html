@@ -36,4 +36,10 @@
 
   <button class="botao botao-primario botao-grande" type="submit">Salvar</button>
 </form>
+
+{% if not novo %}
+<div class="zona-excluir formulario-estreito">
+  {% with p = produto, texto_botao = "Excluir este produto" %}{% include "admin/_excluir_produto.html" %}{% endwith %}
+</div>
+{% endif %}
 {% endblock %}

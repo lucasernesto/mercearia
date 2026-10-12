@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block titulo %}Mercearia{% endblock %}</title>
+  <meta name="theme-color" content="#2f7d4f">
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='icones/icone-192.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
   {% block head %}{% endblock %}
 </head>
@@ -13,6 +15,7 @@
       <a class="marca" href="{% block link_marca %}{{ url_for('catalogo') }}{% endblock %}">🧺 Mercearia</a>
       <nav class="menu">
         {% block nav %}
+        {% if session.admin %}<a href="{{ url_for('admin_pedidos') }}">Painel</a>{% endif %}
         <a class="botao-carrinho" href="{{ url_for('carrinho') }}">
           Carrinho <span class="badge" data-badge-carrinho hidden>0</span>
         </a>
@@ -33,6 +36,12 @@
     {% endwith %}
     {% block conteudo %}{% endblock %}
   </main>
+
+  <footer class="rodape">
+    <div class="container">
+      {% block rodape %}<a href="{{ url_for('admin_pedidos') }}">Área da mercearia</a>{% endblock %}
+    </div>
+  </footer>
 
   <script src="{{ url_for('static', filename='carrinho.js') }}"></script>
   {% block scripts %}<script>atualizarBadge();</script>{% endblock %}

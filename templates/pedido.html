@@ -30,6 +30,26 @@
 </ol>
 {% endif %}
 
+{% if pedido.pagamento == 'pix' and pedido.status not in ('concluido', 'cancelado') and (pix_chave or link_comprovante) %}
+<section class="painel pagamento-pix">
+  <h2>Pagamento via Pix</h2>
+  <p class="valor-pix">Valor: <strong>{{ pedido.total_centavos|brl }}</strong></p>
+  {% if pix_chave %}
+  <div class="chave-pix">
+    <span class="suave">Chave Pix</span>
+    <code>{{ pix_chave }}</code>
+    <button type="button" class="botao botao-secundario" data-copiar="{{ pix_chave }}">Copiar chave</button>
+  </div>
+  {% endif %}
+  {% if link_comprovante %}
+  <a class="botao botao-whatsapp botao-grande" href="{{ link_comprovante }}" target="_blank" rel="noopener">
+    Enviar comprovante pelo WhatsApp
+  </a>
+  <p class="suave dica">O WhatsApp abre com a mensagem pronta. É só anexar a foto ou o PDF do comprovante e enviar.</p>
+  {% endif %}
+</section>
+{% endif %}
+
 <div class="duas-colunas">
   <section class="painel">
     <h2>Itens</h2>

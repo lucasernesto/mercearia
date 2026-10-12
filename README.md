@@ -2,7 +2,7 @@
 
 Sistema web de pedidos com duas áreas:
 
-- **Loja (clientes)**: catálogo por categoria com busca, carrinho, escolha entre entrega e retirada, forma de pagamento e uma página para acompanhar o status do pedido.
+- **Loja (clientes)**: catálogo por categoria com busca, carrinho, escolha entre entrega e retirada, forma de pagamento e uma página para acompanhar o status do pedido. Quem paga com Pix vê a chave, com botão para copiar, e um botão que abre o WhatsApp da loja com a mensagem do comprovante pronta.
 - **Painel (`/admin`)**: lista de pedidos por status com atualização automática, troca de status (novo → em separação → pronto/saiu para entrega → concluído, ou cancelado), link para o WhatsApp do cliente e cadastro de produtos com preço, estoque e visibilidade na loja.
 
 Feito em Python com Flask e SQLite. O frontend usa HTML, CSS e JavaScript puro, sem build.
@@ -43,12 +43,23 @@ Edite o `.env` na pasta do projeto. Variáveis definidas no próprio sistema ope
 |---|---|---|
 | `MERCEARIA_ADMIN_SENHA` | `admin123` | Senha do painel. **Troque antes de colocar no ar.** |
 | `MERCEARIA_TAXA_ENTREGA_CENTAVOS` | `500` | Taxa de entrega em centavos (500 = R$ 5,00). |
+| `MERCEARIA_PIX_CHAVE` | vazio | Chave Pix mostrada ao cliente depois do pedido. |
+| `MERCEARIA_WHATSAPP` | vazio | WhatsApp da loja, com DDD, que recebe os comprovantes. Sem chave e sem número, a seção de Pix não aparece. |
 | `MERCEARIA_HOST` | `127.0.0.1` | `0.0.0.0` libera o acesso de outros aparelhos da rede pelo IP da máquina. |
 | `MERCEARIA_PORTA` | `5000` | Porta do servidor. |
 | `MERCEARIA_SECRET_KEY` | gerada em `instance/secret_key` | Chave das sessões. |
 | `FLASK_DEBUG` | `0` | `1` usa o servidor de desenvolvimento do Flask, que recarrega ao editar o código. |
 
 Fora do modo de desenvolvimento, o sistema roda no [waitress](https://docs.pylonsproject.org/projects/waitress/), um servidor próprio para produção que funciona em Windows, Linux e macOS.
+
+## Painel no celular
+
+- **Como chegar:** no rodapé da loja há o link **Área da mercearia**, que leva ao login do painel. Depois de entrar, o topo da loja mostra o link **Painel**.
+- **Manter conectado:** no login, a opção "Manter conectado neste aparelho por 30 dias" já vem marcada, para não digitar a senha toda vez. Desmarque em aparelhos de uso compartilhado.
+- **Ícone na tela inicial:** abra o painel no celular e use **Adicionar à tela inicial** (Chrome no Android: menu ⋮; Safari no iPhone: botão Compartilhar). O atalho abre direto nos pedidos, em tela cheia, como um aplicativo.
+- Pedidos e produtos aparecem em forma de cartões; tocar no cartão abre o pedido. O telefone do cliente é um link para ligar.
+
+Para o celular acessar o sistema rodando num computador da loja, use `MERCEARIA_HOST=0.0.0.0` no `.env` e abra `http://<IP-do-computador>:5000` no celular, na mesma rede Wi-Fi.
 
 ## Regras de negócio
 
@@ -69,6 +80,8 @@ schema.sql          tabelas: produtos, pedidos, itens_pedido
 templates/          páginas da loja e do painel (templates/admin/)
 static/style.css    visual
 static/carrinho.js  carrinho no navegador, catálogo e checkout
+static/pedido.js    atualização automática da página do pedido
+static/icones/      ícones da tela inicial do celular
 ```
 
 ## Antes de publicar na internet

@@ -55,6 +55,9 @@
         <option value="{{ chave }}" {% if form.pagamento == chave %}selected{% endif %}>{{ rotulo }}</option>
         {% endfor %}
       </select>
+      {% if PIX_CONFIGURADO %}
+      <small id="dica-pix">Depois de enviar o pedido, você vê a chave Pix e pode mandar o comprovante pelo WhatsApp.</small>
+      {% endif %}
     </label>
 
     <label>Observações <small>(opcional)</small>
