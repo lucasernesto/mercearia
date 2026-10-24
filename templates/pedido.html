@@ -4,6 +4,12 @@
 <div class="alerta alerta-sucesso" id="aviso-status" role="status" hidden>
   <strong>Status atualizado:</strong> {{ rotulo_status(pedido.status, pedido.tipo_entrega) }}
 </div>
+{% if session.admin %}
+<div class="alerta alerta-info">
+  Esta é a página que o cliente vê.
+  <a href="{{ url_for('admin_pedido', pedido_id=pedido.id) }}"><strong>Abrir o pedido #{{ pedido.id }} no painel →</strong></a>
+</div>
+{% endif %}
 {% if recem_criado %}
 <div class="alerta alerta-sucesso">
   <strong>Pedido enviado!</strong> Guarde este link para acompanhar o status:
@@ -30,7 +36,19 @@
 </ol>
 {% endif %}
 
-{% if pedido.pagamento == 'pix' and pedido.status not in ('concluido', 'cancelado') and (pix_chave or link_comprovante) %}
+{% if pedido.status == 'novo' %}
+<div class="alerta alerta-info aguardando-aprovacao">
+  <strong>A mercearia vai conferir seu pedido.</strong>
+  {% if pedido.pagamento == 'pix' and PIX_CONFIGURADO %}
+  Assim que ele for aprovado, a chave Pix aparece aqui. <strong>Não faça o Pix antes disso.</strong>
+  {% else %}
+  Você verá aqui quando ele for aprovado.
+  {% endif %}
+  Esta página se atualiza sozinha.
+</div>
+{% endif %}
+
+{% if pix_liberado and (pix_chave or link_comprovante) %}
 <section class="painel pagamento-pix">
   <h2>Pagamento via Pix</h2>
   <p class="valor-pix">Valor: <strong>{{ pedido.total_centavos|brl }}</strong></p>

@@ -3,7 +3,7 @@
 Sistema web de pedidos com duas áreas:
 
 - **Loja (clientes)**: catálogo por categoria com busca, carrinho, escolha entre entrega e retirada, forma de pagamento e uma página para acompanhar o status do pedido. Quem paga com Pix vê a chave, com botão para copiar, e um botão que abre o WhatsApp da loja com a mensagem do comprovante pronta.
-- **Painel (`/admin`)**: lista de pedidos por status com atualização automática, troca de status (novo → em separação → pronto/saiu para entrega → concluído, ou cancelado), link para o WhatsApp do cliente e cadastro de produtos com preço, estoque e visibilidade na loja.
+- **Painel (`/admin`)**: lista de pedidos por status com atualização automática, troca de status (aguardando aprovação → aprovado → em separação → pronto/saiu para entrega → concluído, ou cancelado), link para o WhatsApp do cliente e cadastro de produtos com preço, estoque e visibilidade na loja.
 
 Feito em Python com Flask e SQLite. O frontend usa HTML, CSS e JavaScript puro, sem build.
 
@@ -43,7 +43,7 @@ Edite o `.env` na pasta do projeto. Variáveis definidas no próprio sistema ope
 |---|---|---|
 | `MERCEARIA_ADMIN_SENHA` | `admin123` | Senha do painel. **Troque antes de colocar no ar.** |
 | `MERCEARIA_TAXA_ENTREGA_CENTAVOS` | `500` | Taxa de entrega em centavos (500 = R$ 5,00). |
-| `MERCEARIA_PIX_CHAVE` | vazio | Chave Pix mostrada ao cliente depois do pedido. |
+| `MERCEARIA_PIX_CHAVE` | vazio | Chave Pix mostrada ao cliente depois que a mercearia aprova o pedido. |
 | `MERCEARIA_WHATSAPP` | vazio | WhatsApp da loja, com DDD, que recebe os comprovantes. Sem chave e sem número, a seção de Pix não aparece. |
 | `MERCEARIA_HOST` | `127.0.0.1` | `0.0.0.0` libera o acesso de outros aparelhos da rede pelo IP da máquina. |
 | `MERCEARIA_PORTA` | `5000` | Porta do servidor. |
@@ -67,6 +67,7 @@ Para o celular acessar o sistema rodando num computador da loja, use `MERCEARIA_
 - O estoque baixa quando o pedido é feito. Se dois clientes disputam o último item, só um pedido passa.
 - Cancelar um pedido devolve os itens ao estoque. Um pedido cancelado não muda mais de status.
 - Produtos com estoque zero aparecem como "Esgotado". Produtos ocultos somem da loja, mas continuam nos pedidos antigos.
+- Todo pedido chega como "Aguardando aprovação". No Pix, a chave e o botão do comprovante só aparecem para o cliente depois que a mercearia aprova o pedido.
 - O cliente acompanha o pedido por um link com código aleatório (`/pedido/<código>`). A página confere o status a cada 5 segundos e se atualiza sozinha quando a mercearia muda o status no painel.
 
 ## Estrutura

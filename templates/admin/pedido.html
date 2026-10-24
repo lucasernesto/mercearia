@@ -10,6 +10,17 @@
 </div>
 <p class="suave">Feito em {{ pedido.criado_em|data_br }} · atualizado em {{ pedido.atualizado_em|data_br }}</p>
 
+{% if pedido.status == 'novo' %}
+<div class="alerta alerta-info">
+  <strong>Aguardando sua aprovação.</strong> Confira os itens e aprove o pedido{% if pedido.pagamento == 'pix' %}: só então o cliente vê a chave Pix para pagar{% endif %}.
+  Se não der para atender, cancele.
+</div>
+{% elif pedido.status == 'aprovado' and pedido.pagamento == 'pix' %}
+<div class="alerta alerta-info">
+  <strong>Aguardando o Pix.</strong> O cliente já vê a chave e manda o comprovante pelo WhatsApp. Confira se o valor caiu na conta antes de separar.
+</div>
+{% endif %}
+
 {% if pedido.status != 'cancelado' %}
 <section class="painel acoes-status">
   <h2>Mudar status</h2>
@@ -20,9 +31,9 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="status" value="{{ chave }}">
       <button type="submit"
-              class="botao {% if chave == pedido.status %}botao-atual{% elif chave == 'cancelado' %}botao-perigo{% else %}botao-secundario{% endif %}"
+              class="botao {% if chave == pedido.status %}botao-atual{% elif chave == 'cancelado' %}botao-perigo{% elif chave == 'aprovado' and pedido.status == 'novo' %}botao-primario{% else %}botao-secundario{% endif %}"
               {% if chave == pedido.status %}disabled aria-current="true"{% endif %}>
-        {{ rotulo_status(chave, pedido.tipo_entrega) }}
+        {% if chave == 'aprovado' and pedido.status == 'novo' %}Aprovar pedido{% else %}{{ rotulo_status(chave, pedido.tipo_entrega) }}{% endif %}
       </button>
     </form>
     {% endfor %}
