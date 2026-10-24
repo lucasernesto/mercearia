@@ -52,13 +52,15 @@ def numero_whatsapp(telefone):
     return "55" + digitos if len(digitos) in (10, 11) else digitos
 
 STATUS = {
-    "novo": "Novo",
+    "novo": "Aguardando aprovação",
+    "aprovado": "Aprovado",
     "separando": "Em separação",
     "pronto": "Pronto / saiu para entrega",
     "concluido": "Concluído",
     "cancelado": "Cancelado",
 }
-ETAPAS = ["novo", "separando", "pronto", "concluido"]
+ETAPAS = ["novo", "aprovado", "separando", "pronto", "concluido"]
+STATUS_ABERTOS = ("novo", "aprovado", "separando", "pronto")
 PAGAMENTOS = {
     "pix": "Pix",
     "dinheiro": "Dinheiro",
@@ -367,17 +369,21 @@ def carregar_pedido(where, valor):
 @app.get("/pedido/<codigo>")
 def acompanhar_pedido(codigo):
     pedido, itens = carregar_pedido("codigo", codigo)
+    # A chave Pix só aparece depois que a mercearia aprova o pedido, para o cliente não
+    # pagar por algo que ela ainda pode recusar ou ajustar.
+    pix_liberado = pedido["pagamento"] == "pix" and pedido["status"] in ("aprovado", "separando", "pronto")
     link_comprovante = None
-    if pedido["pagamento"] == "pix" and WHATSAPP_LOJA:
+    if pix_liberado and WHATSAPP_LOJA:
         mensagem = (
             f"Olá! Segue o comprovante do Pix do pedido #{pedido['id']} "
             f"({formatar_brl(pedido['total_centavos'])}), em nome de {pedido['cliente_nome']}.\n"
-            f"Acompanhamento: {url_for('acompanhar_pedido', codigo=codigo, _external=True)}"
+            # Quem abre este link é a mercearia, então ele leva direto ao pedido no painel.
+            f"Ver no painel: {url_for('admin_pedido', pedido_id=pedido['id'], _external=True)}"
         )
         link_comprovante = f"https://wa.me/{WHATSAPP_LOJA}?text={quote(mensagem)}"
     return render_template(
         "pedido.html", pedido=pedido, itens=itens, recem_criado=request.args.get("novo") == "1",
-        pix_chave=PIX_CHAVE, link_comprovante=link_comprovante,
+        pix_liberado=pix_liberado, pix_chave=PIX_CHAVE, link_comprovante=link_comprovante,
     )
 
 
@@ -430,7 +436,8 @@ def admin_pedidos():
     contagem = dict(db.execute("SELECT status, COUNT(*) FROM pedidos GROUP BY status").fetchall())
     if filtro == "abertos":
         pedidos = db.execute(
-            "SELECT * FROM pedidos WHERE status IN ('novo', 'separando', 'pronto') ORDER BY id"
+            f"SELECT * FROM pedidos WHERE status IN ({','.join('?' * len(STATUS_ABERTOS))}) ORDER BY id",
+            STATUS_ABERTOS,
         ).fetchall()
     elif filtro in STATUS:
         pedidos = db.execute(
@@ -439,7 +446,7 @@ def admin_pedidos():
     else:
         filtro = "todos"
         pedidos = db.execute("SELECT * FROM pedidos ORDER BY id DESC LIMIT 200").fetchall()
-    abertos = sum(contagem.get(s, 0) for s in ("novo", "separando", "pronto"))
+    abertos = sum(contagem.get(s, 0) for s in STATUS_ABERTOS)
     return render_template(
         "admin/pedidos.html", pedidos=pedidos, filtro=filtro, contagem=contagem, abertos=abertos
     )
